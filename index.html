@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Угадай убийцу DBD</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #000000;
+      color: #ffffff;
+      text-align: center;
+      min-height: 100vh;
+      padding: 20px;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    h1 {
+      font-size: 3rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: #ffffff;
+      letter-spacing: -0.02em;
+    }
+
+    .subtitle {
+      font-size: 1.1rem;
+      color: #888888;
+      margin-bottom: 50px;
+      font-weight: 300;
+    }
+
+    .audio-section {
+      background: #111111;
+      border: 1px solid #333333;
+      border-radius: 8px;
+      padding: 30px;
+      margin: 30px 0;
+    }
+
+    audio {
+      width: 100%;
+      max-width: 400px;
+      margin: 20px auto;
+      border-radius: 4px;
+      background: #000000;
+    }
+
+    .levels-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+      margin: 30px 0;
+    }
+
+    .level-btn {
+      background: #111111;
+      border: 1px solid #333333;
+      border-radius: 6px;
+      padding: 15px 20px;
+      font-size: 1rem;
+      font-weight: 500;
+      color: #ffffff;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .level-btn:hover {
+      background: #222222;
+    }
+
+    .level-btn:disabled {
+      background: #000000;
+      border-color: #222222;
+      color: #666666;
+      cursor: not-allowed;
+    }
+
+    .input-section {
+      background: #111111;
+      border: 1px solid #333333;
+      border-radius: 8px;
+      padding: 30px;
+      margin: 30px 0;
+      position: relative;
+    }
+
+    .input-group {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .killer-input {
+      background: #000000;
+      border: 1px solid #333333;
+      border-radius: 6px;
+      padding: 15px 20px;
+      font-size: 1rem;
+      color: #ffffff;
+      width: 300px;
+      max-width: 100%;
+      transition: border-color 0.2s ease;
+    }
+
+    .killer-input:focus {
+      outline: none;
+      border-color: #ffffff;
+    }
+
+    .killer-input::placeholder {
+      color: #666666;
+    }
+
+    .guess-btn {
+      background: #ffffff;
+      border: 1px solid #ffffff;
+      border-radius: 6px;
+      padding: 15px 30px;
+      font-size: 1rem;
+      font-weight: 500;
+      color: #000000;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .guess-btn:hover {
+      background: #f0f0f0;
+    }
+
+    .guess-btn:disabled {
+      background: #333333;
+      border-color: #333333;
+      color: #666666;
+      cursor: not-allowed;
+    }
+
+    .suggestions {
+      background: #000000;
+      border: 1px solid #333333;
+      border-radius: 6px;
+      width: 350px;
+      max-width: 100%;
+      margin: 10px auto 0;
+      text-align: left;
+      max-height: 300px;
+      overflow-y: auto;
+      display: none;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+    }
+
+    .suggestion-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 20px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      border-bottom: 1px solid #222222;
+    }
+
+    .suggestion-item:last-child {
+      border-bottom: none;
+    }
+
+    .suggestion-item:hover {
+      background: #111111;
+    }
+
+    .suggestion-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 4px;
+      object-fit: cover;
+      border: 1px solid #333333;
+    }
+
+    .suggestion-name {
+      font-weight: 400;
+      color: #ffffff;
+    }
+
+    .result {
+      font-size: 1.3rem;
+      margin: 40px 0;
+      padding: 30px;
+      border-radius: 8px;
+      font-weight: 400;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      background: #111111;
+      border: 1px solid #333333;
+    }
+
+    .result-icon {
+      width: 80px;
+      height: 80px;
+      border-radius: 6px;
+      object-fit: cover;
+      border: 1px solid #333333;
+    }
+
+    .result.correct {
+      background: #0a0a0a;
+      border-color: #ffffff;
+    }
+
+    .result.incorrect {
+      background: #0a0a0a;
+      border-color: #666666;
+    }
+
+    .restart-btn {
+      background: #ffffff;
+      border: 1px solid #ffffff;
+      border-radius: 6px;
+      padding: 15px 30px;
+      font-size: 1rem;
+      font-weight: 500;
+      color: #000000;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      display: none;
+      margin: 20px auto;
+    }
+
+    .restart-btn:hover {
+      background: #f0f0f0;
+    }
+
+    /* Скроллбар для suggestions */
+    .suggestions::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .suggestions::-webkit-scrollbar-track {
+      background: #000000;
+    }
+
+    .suggestions::-webkit-scrollbar-thumb {
+      background: #333333;
+      border-radius: 3px;
+    }
+
+    .suggestions::-webkit-scrollbar-thumb:hover {
+      background: #444444;
+    }
+
+    /* Адаптивность */
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 2.5rem;
+      }
+      
+      .container {
+        padding: 20px 10px;
+      }
+      
+      .input-group {
+        flex-direction: column;
+      }
+      
+      .killer-input {
+        width: 100%;
+      }
+      
+      .levels-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .suggestions {
+        width: 90%;
+        left: 5%;
+        transform: none;
+      }
+
+      .result-icon {
+        width: 60px;
+        height: 60px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 2rem;
+      }
+      
+      .levels-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .result {
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .result-icon {
+        width: 70px;
+        height: 70px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Угадай убийцу DBD</h1>
+    <p class="subtitle">Слушай уровни террора и попробуй угадать убийцу</p>
+
+    <div class="audio-section">
+      <audio id="audioPlayer" controls>
+        <source src="" type="audio/ogg">
+        Твой браузер не поддерживает аудио
+      </audio>
+    </div>
+
+    <div class="levels-grid" id="levels">
+      <button class="level-btn" id="btn1">Уровень 1</button>
+      <button class="level-btn" id="btn2" disabled>Уровень 2</button>
+      <button class="level-btn" id="btn3" disabled>Уровень 3</button>
+      <button class="level-btn" id="btn4" disabled>Уровень 4</button>
+    </div>
+
+    <div class="input-section">
+      <div class="input-group">
+        <input type="text" class="killer-input" id="killerInput" placeholder="Введи имя убийцы" autocomplete="off">
+        <button class="guess-btn" id="guessBtn">Угадать</button>
+      </div>
+      <div class="suggestions" id="suggestions"></div>
+    </div>
+
+    <div id="result" class="result"></div>
+    <button class="restart-btn" id="restartBtn">Начать заново</button>
+  </div>
+
+  <script>
+    const killers = {
+      k03: 'Hillbilly',
+      k04: 'Nurse', 
+      k05: 'Hag',
+      k06: 'Shape',
+      k07: 'Doctor',
+      k12: 'Clown',
+      k13: 'Spirit',
+      k14: 'Legion',
+      k16: 'Ghostface',
+      k17: 'Demogorgon',
+      k18: 'Oni',
+      k19: 'Deathslinger',
+      k20: 'Executioner',
+      k21: 'Blight',
+      k22: 'Twins',
+      k23: 'Trickster',
+      k24: 'Nemesis',
+      k25: 'Cenobite',
+      k26: 'Artist',
+      k27: 'Onryō',
+      k28: 'Dredge',
+      k29: 'Mastermind',
+      k30: 'Knight',
+      k31: 'Skull Merchant',
+      k32: 'Singularity',
+      k33: 'Xenomorph',
+      k34: 'Good Guy',
+      k35: 'Unknown',
+      k36: 'Lich',
+      k37: 'Dark Lord',
+      k38: 'Houndmaster',
+      k39: 'Ghoul',
+      k40: 'Animatronic'
+    };
+
+    const killerKeys = Object.keys(killers);
+    let selectedKillerKey;
+    let selectedKillerName;
+    let currentLevel;
+
+    const killerInput = document.getElementById('killerInput');
+    const suggestionsDiv = document.getElementById('suggestions');
+    const audio = document.getElementById('audioPlayer');
+    const result = document.getElementById('result');
+    const guessBtn = document.getElementById('guessBtn');
+    const restartBtn = document.getElementById('restartBtn');
+
+    // Устанавливаем громкость на 50%
+    audio.volume = 0.5;
+
+    function getKillerIcon(killerName) {
+      const iconMap = {
+        'Hillbilly': 'hillbilly.webp',
+        'Nurse': 'nurse.webp',
+        'Hag': 'hag.webp',
+        'Shape': 'shape.webp',
+        'Doctor': 'doctor.webp',
+        'Clown': 'clown.webp',
+        'Spirit': 'spirit.webp',
+        'Legion': 'legion.webp',
+        'Ghostface': 'ghostface.webp',
+        'Demogorgon': 'demogorgon.webp',
+        'Oni': 'oni.webp',
+        'Deathslinger': 'deathslinger.webp',
+        'Executioner': 'executioner.webp',
+        'Blight': 'blight.webp',
+        'Twins': 'twins.webp',
+        'Trickster': 'trickster.webp',
+        'Nemesis': 'nemesis.webp',
+        'Cenobite': 'cenobite.webp',
+        'Artist': 'artist.webp',
+        'Onryō': 'onryo.webp',
+        'Dredge': 'dredge.webp',
+        'Mastermind': 'mastermind.webp',
+        'Knight': 'knight.webp',
+        'Skull Merchant': 'skullmerchant.webp',
+        'Singularity': 'singularity.webp',
+        'Xenomorph': 'xenomorph.webp',
+        'Good Guy': 'goodguy.webp',
+        'Unknown': 'unknown.webp',
+        'Lich': 'lich.webp',
+        'Dark Lord': 'darklord.webp',
+        'Houndmaster': 'houndmaster.webp',
+        'Ghoul': 'ghoul.webp',
+        'Animatronic': 'animatronic.webp'
+      };
+      return iconMap[killerName] || 'unknown.webp';
+    }
+
+    function initGame() {
+      selectedKillerKey = killerKeys[Math.floor(Math.random() * killerKeys.length)];
+      selectedKillerName = killers[selectedKillerKey];
+      currentLevel = 1;
+
+      for (let i = 1; i <= 4; i++) {
+        document.getElementById(`btn${i}`).disabled = (i !== 1);
+      }
+
+      killerInput.disabled = false;
+      killerInput.value = '';
+      guessBtn.disabled = false;
+      result.innerHTML = '';
+      result.className = 'result';
+      restartBtn.style.display = 'none';
+    }
+
+    function playLevel(level) {
+      const path = `audio/mu_terrorradius_${selectedKillerKey}_layer_0${level}.ogg`;
+      audio.src = path;
+      audio.play();
+    }
+
+    // Автопроигрывание при клике на уровень
+    for (let i = 1; i <= 4; i++) {
+      const btn = document.getElementById(`btn${i}`);
+      btn.addEventListener('click', () => {
+        playLevel(i);
+      });
+    }
+
+    guessBtn.addEventListener('click', () => {
+      const input = killerInput.value.trim().toLowerCase();
+      const match = Object.entries(killers).find(([key, name]) => name.toLowerCase() === input);
+      if (!match) return;
+
+      const selected = match[0];
+      const selectedKillerName = killers[selected];
+      const iconPath = `img/${getKillerIcon(selectedKillerName)}`;
+
+      if (selected === selectedKillerKey) {
+        result.innerHTML = `
+          <img src="${iconPath}" alt="${selectedKillerName}" class="result-icon">
+          <span>✅ Правильно! Это был ${selectedKillerName}</span>
+        `;
+        result.className = 'result correct';
+        disableAll();
+      } else {
+        if (currentLevel < 4) {
+          result.innerHTML = `
+            <img src="${iconPath}" alt="${selectedKillerName}" class="result-icon">
+            <span>❌ Неправильно. Открыт уровень ${currentLevel + 1}</span>
+          `;
+          result.className = 'result incorrect';
+          document.getElementById(`btn${currentLevel + 1}`).disabled = false;
+          currentLevel++;
+        } else {
+          const correctIconPath = `img/${getKillerIcon(killers[selectedKillerKey])}`;
+          result.innerHTML = `
+            <img src="${correctIconPath}" alt="${killers[selectedKillerKey]}" class="result-icon">
+            <span>❌ Неправильно. Это был ${killers[selectedKillerKey]}</span>
+          `;
+          result.className = 'result incorrect';
+          disableAll();
+        }
+      }
+    });
+
+    function disableAll() {
+      for (let i = 1; i <= 4; i++) {
+        document.getElementById(`btn${i}`).disabled = true;
+      }
+      guessBtn.disabled = true;
+      killerInput.disabled = true;
+      suggestionsDiv.style.display = 'none';
+      restartBtn.style.display = 'inline-block';
+    }
+
+    killerInput.addEventListener('input', () => {
+      const value = killerInput.value.toLowerCase();
+      suggestionsDiv.innerHTML = '';
+
+      if (!value) {
+        suggestionsDiv.style.display = 'none';
+        return;
+      }
+
+      const filtered = Object.values(killers).filter(name => name.toLowerCase().includes(value));
+      if (filtered.length === 0) {
+        suggestionsDiv.style.display = 'none';
+        return;
+      }
+
+      suggestionsDiv.style.display = 'block';
+      filtered.forEach(name => {
+        const div = document.createElement('div');
+        div.className = 'suggestion-item';
+        const iconPath = `img/${getKillerIcon(name)}`;
+        div.innerHTML = `
+          <img src="${iconPath}" alt="${name}" class="suggestion-icon">
+          <span class="suggestion-name">${name}</span>
+        `;
+        div.addEventListener('click', () => {
+          killerInput.value = name;
+          suggestionsDiv.style.display = 'none';
+        });
+        suggestionsDiv.appendChild(div);
+      });
+    });
+
+    document.addEventListener('click', (e) => {
+      if (e.target !== killerInput) {
+        suggestionsDiv.style.display = 'none';
+      }
+    });
+
+    restartBtn.addEventListener('click', () => {
+      initGame();
+    });
+
+    // Добавляем поддержку Enter для отправки
+    killerInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter' && !guessBtn.disabled) {
+        guessBtn.click();
+      }
+    });
+
+    initGame();
+  </script>
+</body>
+</html>
