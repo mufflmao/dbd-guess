@@ -3,8 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Угадай убийцу DBD</title>
+  <title>DBD Guess Game</title>
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+  <link rel="manifest" href="site.webmanifest">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="translations.js"></script>
   <style>
     * {
       margin: 0;
@@ -18,29 +26,117 @@
       color: #ffffff;
       text-align: center;
       min-height: 100vh;
-      padding: 20px;
+      display: flex;
+      flex-direction: column;
       line-height: 1.6;
+    }
+
+    .header {
+      background: #111111;
+      border-bottom: 1px solid #333333;
+      padding: 20px 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-content {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header h1 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #ffffff;
+      letter-spacing: -0.02em;
+      text-align: left;
+    }
+
+    .language-toggle {
+      background: #333333;
+      border: 1px solid #444444;
+      border-radius: 6px;
+      padding: 8px 16px;
+      font-size: 0.9rem;
+      font-weight: 400;
+      color: #ffffff;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .language-toggle:hover {
+      background: #444444;
+    }
+
+    .main-content {
+      flex: 1;
+      padding: 40px 20px;
     }
 
     .container {
       max-width: 900px;
       margin: 0 auto;
-      padding: 40px 20px;
     }
 
-    h1 {
-      font-size: 3rem;
-      font-weight: 600;
-      margin-bottom: 10px;
-      color: #ffffff;
-      letter-spacing: -0.02em;
+
+
+    .stats-section {
+      background: #111111;
+      border: 1px solid #333333;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 15px;
     }
 
-    .subtitle {
-      font-size: 1.1rem;
+    .stats {
+      display: flex;
+      gap: 30px;
+      align-items: center;
+    }
+
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .stat-label {
+      font-size: 0.9rem;
       color: #888888;
-      margin-bottom: 50px;
       font-weight: 300;
+    }
+
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #ffffff;
+    }
+
+    .reset-stats-btn {
+      background: #333333;
+      border: 1px solid #444444;
+      border-radius: 6px;
+      padding: 8px 16px;
+      font-size: 0.9rem;
+      font-weight: 400;
+      color: #ffffff;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .reset-stats-btn:hover {
+      background: #444444;
     }
 
     .audio-section {
@@ -87,6 +183,22 @@
       border-color: #222222;
       color: #666666;
       cursor: not-allowed;
+    }
+
+    .level-btn.highlight {
+      border-color: #ffffff;
+      animation: pulseHighlight 2s ease-in-out infinite;
+    }
+
+    @keyframes pulseHighlight {
+      0%, 100% {
+        border-color: #ffffff;
+        box-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+      }
+      50% {
+        border-color: #ffffff;
+        box-shadow: 0 0 15px rgba(255, 255, 255, 0.6);
+      }
     }
 
     .input-section {
@@ -249,6 +361,47 @@
       background: #f0f0f0;
     }
 
+    .footer {
+      background: #111111;
+      border-top: 1px solid #333333;
+      padding: 20px 0;
+      margin-top: auto;
+    }
+
+    .footer-content {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .footer-text {
+      color: #888888;
+      font-size: 0.7rem;
+      font-weight: 300;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 20px;
+    }
+
+    .footer-link {
+      color: #888888;
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 300;
+      transition: color 0.2s ease;
+    }
+
+    .footer-link:hover {
+      color: #ffffff;
+    }
+
     /* Скроллбар для suggestions */
     .suggestions::-webkit-scrollbar {
       width: 6px;
@@ -268,13 +421,22 @@
     }
 
     /* Адаптивность */
-    @media (max-width: 768px) {
-      h1 {
-        font-size: 2.5rem;
+         @media (max-width: 768px) {
+       .header h1 {
+         font-size: 1rem;
+       }
+      
+      .main-content {
+        padding: 20px 10px;
       }
       
-      .container {
-        padding: 20px 10px;
+      .stats-section {
+        flex-direction: column;
+        gap: 20px;
+      }
+      
+      .stats {
+        gap: 20px;
       }
       
       .input-group {
@@ -299,12 +461,22 @@
         width: 60px;
         height: 60px;
       }
+
+      .footer-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+      }
+
+      .footer-links {
+        justify-content: center;
+      }
     }
 
-    @media (max-width: 480px) {
-      h1 {
-        font-size: 2rem;
-      }
+         @media (max-width: 480px) {
+       .header h1 {
+         font-size: 0.9rem;
+       }
       
       .levels-grid {
         grid-template-columns: 1fr;
@@ -319,39 +491,90 @@
         width: 70px;
         height: 70px;
       }
+
+      .stats {
+        gap: 15px;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Угадай убийцу DBD</h1>
-    <p class="subtitle">Слушай уровни террора и попробуй угадать убийцу</p>
-
-    <div class="audio-section">
-      <audio id="audioPlayer" controls>
-        <source src="" type="audio/ogg">
-        Твой браузер не поддерживает аудио
-      </audio>
+  <header class="header">
+    <div class="header-content">
+      <h1>DBD Guess Game</h1>
+      <button class="language-toggle" id="languageToggle">EN</button>
     </div>
+  </header>
 
-    <div class="levels-grid" id="levels">
-      <button class="level-btn" id="btn1">Уровень 1</button>
-      <button class="level-btn" id="btn2" disabled>Уровень 2</button>
-      <button class="level-btn" id="btn3" disabled>Уровень 3</button>
-      <button class="level-btn" id="btn4" disabled>Уровень 4</button>
-    </div>
+  <main class="main-content">
+    <div class="container">
 
-    <div class="input-section">
-      <div class="input-group">
-        <input type="text" class="killer-input" id="killerInput" placeholder="Введи имя убийцы" autocomplete="off">
-        <button class="guess-btn" id="guessBtn">Угадать</button>
+
+      <div class="stats-section">
+        <div class="stats">
+          <div class="stat-item">
+            <div class="stat-label">Правильно</div>
+            <div class="stat-value" id="correctCount">0</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Неправильно</div>
+            <div class="stat-value" id="incorrectCount">0</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Точность</div>
+            <div class="stat-value" id="accuracy">0%</div>
+          </div>
+        </div>
+        <button class="reset-stats-btn" id="resetStatsBtn">Сбросить статистику</button>
       </div>
-      <div class="suggestions" id="suggestions"></div>
-    </div>
 
-    <div id="result" class="result"></div>
-    <button class="restart-btn" id="restartBtn">Начать заново</button>
-  </div>
+             <div class="audio-section">
+         <audio id="audioPlayer" controls>
+           <source src="" type="audio/ogg">
+           Твой браузер не поддерживает аудио
+         </audio>
+         
+         <!-- Звуковые эффекты -->
+         <audio id="correctSound" preload="auto">
+           <source src="audio/correct_answer.ogg" type="audio/ogg">
+         </audio>
+         <audio id="wrongSound" preload="auto">
+           <source src="audio/wrong_answer.ogg" type="audio/ogg">
+         </audio>
+       </div>
+
+      <div class="levels-grid" id="levels">
+        <button class="level-btn" id="btn1">Уровень 1</button>
+        <button class="level-btn" id="btn2" disabled>Уровень 2</button>
+        <button class="level-btn" id="btn3" disabled>Уровень 3</button>
+        <button class="level-btn" id="btn4" disabled>Уровень 4</button>
+      </div>
+
+      <div class="input-section">
+        <div class="input-group">
+          <input type="text" class="killer-input" id="killerInput" placeholder="Введи имя убийцы" autocomplete="off">
+          <button class="guess-btn" id="guessBtn">Угадать</button>
+        </div>
+        <div class="suggestions" id="suggestions"></div>
+      </div>
+
+      <div id="result" class="result"></div>
+      <button class="restart-btn" id="restartBtn">Начать заново</button>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-text">
+        © 2025 DBD Guess Game. Все права защищены.
+      </div>
+      <div class="footer-links">
+        <a href="#" class="footer-link">О проекте</a>
+        <a href="#" class="footer-link">Помощь</a>
+        <a href="#" class="footer-link">Контакты</a>
+      </div>
+    </div>
+  </footer>
 
   <script>
     const killers = {
@@ -395,15 +618,79 @@
     let selectedKillerName;
     let currentLevel;
 
+    // Статистика
+    let correctAnswers = 0;
+    let incorrectAnswers = 0;
+    
+    // Язык интерфейса
+    let currentLanguage = 'en';
+
     const killerInput = document.getElementById('killerInput');
     const suggestionsDiv = document.getElementById('suggestions');
-    const audio = document.getElementById('audioPlayer');
-    const result = document.getElementById('result');
-    const guessBtn = document.getElementById('guessBtn');
-    const restartBtn = document.getElementById('restartBtn');
+         const audio = document.getElementById('audioPlayer');
+     const correctSound = document.getElementById('correctSound');
+     const wrongSound = document.getElementById('wrongSound');
+     const result = document.getElementById('result');
+     const guessBtn = document.getElementById('guessBtn');
+     const restartBtn = document.getElementById('restartBtn');
+     const correctCountEl = document.getElementById('correctCount');
+     const incorrectCountEl = document.getElementById('incorrectCount');
+     const accuracyEl = document.getElementById('accuracy');
+     const resetStatsBtn = document.getElementById('resetStatsBtn');
+     const languageToggle = document.getElementById('languageToggle');
 
-    // Устанавливаем громкость на 50%
-    audio.volume = 0.5;
+         // Устанавливаем громкость на 50%
+     audio.volume = 0.5;
+     correctSound.volume = 0.1;
+     wrongSound.volume = 0.3;
+
+    // Загружаем статистику из localStorage
+    function loadStats() {
+      const savedStats = localStorage.getItem('dbdGuessStats');
+      if (savedStats) {
+        const stats = JSON.parse(savedStats);
+        correctAnswers = stats.correct || 0;
+        incorrectAnswers = stats.incorrect || 0;
+        updateStatsDisplay();
+      }
+    }
+
+    // Загружаем язык из localStorage
+    function loadLanguage() {
+      const savedLanguage = localStorage.getItem('dbdGuessLanguage');
+      if (savedLanguage) {
+        currentLanguage = savedLanguage;
+        updateLanguageDisplay();
+      }
+    }
+
+    // Сохраняем язык в localStorage
+    function saveLanguage() {
+      localStorage.setItem('dbdGuessLanguage', currentLanguage);
+    }
+
+    // Обновляем отображение языка
+    function updateLanguageDisplay() {
+      languageToggle.textContent = currentLanguage.toUpperCase();
+    }
+
+    // Сохраняем статистику в localStorage
+    function saveStats() {
+      localStorage.setItem('dbdGuessStats', JSON.stringify({
+        correct: correctAnswers,
+        incorrect: incorrectAnswers
+      }));
+    }
+
+    // Обновляем отображение статистики
+    function updateStatsDisplay() {
+      correctCountEl.textContent = correctAnswers;
+      incorrectCountEl.textContent = incorrectAnswers;
+      
+      const total = correctAnswers + incorrectAnswers;
+      const accuracy = total > 0 ? Math.round((correctAnswers / total) * 100) : 0;
+      accuracyEl.textContent = accuracy + '%';
+    }
 
     function getKillerIcon(killerName) {
       const iconMap = {
@@ -449,9 +736,20 @@
       selectedKillerName = killers[selectedKillerKey];
       currentLevel = 1;
 
+      // Сбрасываем плеер
+      audio.pause();
+      audio.currentTime = 0;
+      audio.src = '';
+
       for (let i = 1; i <= 4; i++) {
-        document.getElementById(`btn${i}`).disabled = (i !== 1);
+        const btn = document.getElementById(`btn${i}`);
+        btn.disabled = (i !== 1);
+        btn.classList.remove('highlight');
       }
+
+      // Добавляем подсветку для кнопки первого уровня
+      const firstBtn = document.getElementById('btn1');
+      firstBtn.classList.add('highlight');
 
       killerInput.disabled = false;
       killerInput.value = '';
@@ -472,55 +770,100 @@
       const btn = document.getElementById(`btn${i}`);
       btn.addEventListener('click', () => {
         playLevel(i);
+        
+        // Убираем подсветку с кнопки первого уровня после первого нажатия
+        if (i === 1) {
+          btn.classList.remove('highlight');
+        }
       });
     }
 
     guessBtn.addEventListener('click', () => {
-      const input = killerInput.value.trim().toLowerCase();
-      const match = Object.entries(killers).find(([key, name]) => name.toLowerCase() === input);
+      const input = killerInput.value.trim();
+      
+      // Ищем совпадение с учетом языка
+      let match = null;
+      if (currentLanguage === 'en') {
+        match = Object.entries(killers).find(([key, name]) => name.toLowerCase() === input.toLowerCase());
+      } else {
+        // Для русского языка ищем по переводу
+        const englishName = getReverseTranslation(input, currentLanguage);
+        match = Object.entries(killers).find(([key, name]) => name.toLowerCase() === englishName.toLowerCase());
+      }
+      
       if (!match) return;
 
       const selected = match[0];
       const selectedKillerName = killers[selected];
+      const translatedName = getTranslation(selectedKillerName, currentLanguage);
       const iconPath = `img/${getKillerIcon(selectedKillerName)}`;
 
-      if (selected === selectedKillerKey) {
-        result.innerHTML = `
-          <img src="${iconPath}" alt="${selectedKillerName}" class="result-icon">
-          <span>✅ Правильно! Это был ${selectedKillerName}</span>
-        `;
-        result.className = 'result correct';
-        disableAll();
-      } else {
+             if (selected === selectedKillerKey) {
+         correctAnswers++;
+         // Проигрываем звук правильного ответа
+         correctSound.currentTime = 0;
+         correctSound.play();
+         
+         result.innerHTML = `
+           <img src="${iconPath}" alt="${translatedName}" class="result-icon">
+           <span>✅ Правильно! Это был ${translatedName}</span>
+         `;
+         result.className = 'result correct';
+         
+         // Разблокируем все уровни для прослушивания
+         unlockAllLevels();
+         
+         // Отключаем только поле ввода и кнопку угадывания
+         guessBtn.disabled = true;
+         killerInput.disabled = true;
+         suggestionsDiv.style.display = 'none';
+         restartBtn.style.display = 'inline-block';
+       } else {
+         // Проигрываем звук неправильного ответа
+         wrongSound.currentTime = 0;
+         wrongSound.play();
+        incorrectAnswers++;
         if (currentLevel < 4) {
           result.innerHTML = `
-            <img src="${iconPath}" alt="${selectedKillerName}" class="result-icon">
+            <img src="${iconPath}" alt="${translatedName}" class="result-icon">
             <span>❌ Неправильно. Открыт уровень ${currentLevel + 1}</span>
           `;
           result.className = 'result incorrect';
           document.getElementById(`btn${currentLevel + 1}`).disabled = false;
           currentLevel++;
         } else {
-          const correctIconPath = `img/${getKillerIcon(killers[selectedKillerKey])}`;
+          const correctKillerName = killers[selectedKillerKey];
+          const correctTranslatedName = getTranslation(correctKillerName, currentLanguage);
+          const correctIconPath = `img/${getKillerIcon(correctKillerName)}`;
           result.innerHTML = `
-            <img src="${correctIconPath}" alt="${killers[selectedKillerKey]}" class="result-icon">
-            <span>❌ Неправильно. Это был ${killers[selectedKillerKey]}</span>
+            <img src="${correctIconPath}" alt="${correctTranslatedName}" class="result-icon">
+            <span>❌ Неправильно. Это был ${correctTranslatedName}</span>
           `;
           result.className = 'result incorrect';
           disableAll();
         }
       }
+
+      // Обновляем и сохраняем статистику
+      updateStatsDisplay();
+      saveStats();
     });
 
-    function disableAll() {
-      for (let i = 1; i <= 4; i++) {
-        document.getElementById(`btn${i}`).disabled = true;
-      }
-      guessBtn.disabled = true;
-      killerInput.disabled = true;
-      suggestionsDiv.style.display = 'none';
-      restartBtn.style.display = 'inline-block';
-    }
+         function disableAll() {
+       for (let i = 1; i <= 4; i++) {
+         document.getElementById(`btn${i}`).disabled = true;
+       }
+       guessBtn.disabled = true;
+       killerInput.disabled = true;
+       suggestionsDiv.style.display = 'none';
+       restartBtn.style.display = 'inline-block';
+     }
+
+     function unlockAllLevels() {
+       for (let i = 1; i <= 4; i++) {
+         document.getElementById(`btn${i}`).disabled = false;
+       }
+     }
 
     killerInput.addEventListener('input', () => {
       const value = killerInput.value.toLowerCase();
@@ -531,7 +874,18 @@
         return;
       }
 
-      const filtered = Object.values(killers).filter(name => name.toLowerCase().includes(value));
+      // Фильтруем убийц с учетом языка
+      let filtered = [];
+      if (currentLanguage === 'en') {
+        filtered = Object.values(killers).filter(name => name.toLowerCase().includes(value));
+      } else {
+        // Для русского языка фильтруем по переводам
+        filtered = Object.values(killers).filter(name => {
+          const translatedName = getTranslation(name, currentLanguage);
+          return translatedName.toLowerCase().includes(value);
+        });
+      }
+
       if (filtered.length === 0) {
         suggestionsDiv.style.display = 'none';
         return;
@@ -542,12 +896,13 @@
         const div = document.createElement('div');
         div.className = 'suggestion-item';
         const iconPath = `img/${getKillerIcon(name)}`;
+        const translatedName = getTranslation(name, currentLanguage);
         div.innerHTML = `
-          <img src="${iconPath}" alt="${name}" class="suggestion-icon">
-          <span class="suggestion-name">${name}</span>
+          <img src="${iconPath}" alt="${translatedName}" class="suggestion-icon">
+          <span class="suggestion-name">${translatedName}</span>
         `;
         div.addEventListener('click', () => {
-          killerInput.value = name;
+          killerInput.value = translatedName;
           suggestionsDiv.style.display = 'none';
         });
         suggestionsDiv.appendChild(div);
@@ -564,6 +919,27 @@
       initGame();
     });
 
+    // Сброс статистики
+    resetStatsBtn.addEventListener('click', () => {
+      if (confirm('Вы уверены, что хотите сбросить всю статистику?')) {
+        correctAnswers = 0;
+        incorrectAnswers = 0;
+        updateStatsDisplay();
+        saveStats();
+      }
+    });
+
+    // Переключение языка
+    languageToggle.addEventListener('click', () => {
+      currentLanguage = currentLanguage === 'en' ? 'ru' : 'en';
+      updateLanguageDisplay();
+      saveLanguage();
+      
+      // Очищаем поле ввода при смене языка
+      killerInput.value = '';
+      suggestionsDiv.style.display = 'none';
+    });
+
     // Добавляем поддержку Enter для отправки
     killerInput.addEventListener('keypress', (e) => {
       if (e.key === 'Enter' && !guessBtn.disabled) {
@@ -571,6 +947,9 @@
       }
     });
 
+    // Загружаем статистику и язык при загрузке страницы
+    loadStats();
+    loadLanguage();
     initGame();
   </script>
 </body>
