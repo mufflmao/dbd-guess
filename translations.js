@@ -123,11 +123,14 @@ function getTranslation(name, language) {
 // Функция для получения обратного перевода (с русского на английский)
 function getReverseTranslation(russianName, language) {
   if (language === 'en') return russianName;
-  
   for (const [englishName, russianTranslation] of Object.entries(translations.ru)) {
     if (russianTranslation === russianName) {
       return englishName;
     }
   }
   return russianName;
-} 
+}
+
+// Экспортируем функции в window для глобального доступа (важно для GitHub Pages)
+window.getTranslation = getTranslation;
+window.getReverseTranslation = getReverseTranslation;
