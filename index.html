@@ -794,13 +794,16 @@
     let selectedKillerKey;
     let selectedKillerName;
     let currentLevel;
+    let killerHistory = [];
 
     // Статистика
     let correctAnswers = 0;
     let incorrectAnswers = 0;
-    
+
     // Язык интерфейса
     let currentLanguage = 'en';
+
+    // Таймер для автоперезапуска (больше не используется)
 
     const killerInput = document.getElementById('killerInput');
     const suggestionsDiv = document.getElementById('suggestions');
@@ -943,8 +946,40 @@
       return iconMap[killerName] || 'unknown.webp';
     }
 
+    function saveKillerHistory() {
+      localStorage.setItem('dbdGuessKillerHistory', JSON.stringify(killerHistory));
+    }
+
+    function loadKillerHistory() {
+      const saved = localStorage.getItem('dbdGuessKillerHistory');
+      if (saved) {
+        try {
+          killerHistory = JSON.parse(saved);
+        } catch (e) {
+          killerHistory = [];
+        }
+      }
+    }
+
+
+
+    function pickNewKiller() {
+      // Получаем список доступных убийц, исключая последних 10
+      const available = killerKeys.filter(key => !killerHistory.includes(key));
+      let key;
+      if (available.length === 0) {
+        // Если все перебраны, сбрасываем историю
+        killerHistory = [];
+        saveKillerHistory();
+        key = killerKeys[Math.floor(Math.random() * killerKeys.length)];
+      } else {
+        key = available[Math.floor(Math.random() * available.length)];
+      }
+      return key;
+    }
+
     function initGame() {
-      selectedKillerKey = killerKeys[Math.floor(Math.random() * killerKeys.length)];
+      selectedKillerKey = pickNewKiller();
       selectedKillerName = killers[selectedKillerKey];
       currentLevel = 1;
 
@@ -963,13 +998,16 @@
       const firstBtn = document.getElementById('btn1');
       firstBtn.classList.add('highlight');
 
-             killerInput.disabled = false;
-       killerInput.value = '';
-       guessBtn.disabled = false;
-       result.innerHTML = '';
-       result.className = 'result';
-       result.style.display = 'none';
-       restartBtn.style.display = 'none';
+      killerInput.disabled = false;
+      killerInput.value = '';
+      guessBtn.disabled = false;
+      result.innerHTML = '';
+      result.className = 'result';
+      result.style.display = 'none';
+      restartBtn.style.display = 'none';
+
+      // Переводим интерфейс
+      updateAllTranslations();
     }
 
          function playLevel(level) {
@@ -997,7 +1035,6 @@
 
     guessBtn.addEventListener('click', () => {
       const input = killerInput.value.trim();
-      
       // Ищем совпадение с учетом языка
       let match = null;
       if (currentLanguage === 'en') {
@@ -1007,7 +1044,6 @@
         const englishName = getReverseTranslation(input, currentLanguage);
         match = Object.entries(killers).find(([key, name]) => name.toLowerCase() === englishName.toLowerCase());
       }
-      
       if (!match) return;
 
       const selected = match[0];
@@ -1015,61 +1051,66 @@
       const translatedName = getTranslation(selectedKillerName, currentLanguage);
       const iconPath = `img/${getKillerIcon(selectedKillerName)}`;
 
-             if (selected === selectedKillerKey) {
-         correctAnswers++;
-         // Проигрываем звук правильного ответа
-         correctSound.currentTime = 0;
-         correctSound.play();
-         
-                    result.innerHTML = `
-             <img src="${iconPath}" alt="${translatedName}" class="result-icon">
-             <span>✅ Правильно! Это был ${translatedName}</span>
-           `;
-           result.className = 'result correct';
-           result.style.display = 'flex';
-         
-         // Разблокируем все уровни для прослушивания
-         unlockAllLevels();
-         
-         // Отключаем только поле ввода и кнопку угадывания
-         guessBtn.disabled = true;
-         killerInput.disabled = true;
-         suggestionsDiv.style.display = 'none';
-         restartBtn.style.display = 'inline-block';
-       } else {
-         // Проигрываем звук неправильного ответа
-         wrongSound.currentTime = 0;
-         wrongSound.play();
+      if (selected === selectedKillerKey) {
+        correctAnswers++;
+        // Проигрываем звук правильного ответа
+        correctSound.currentTime = 0;
+        correctSound.play();
+
+        result.innerHTML = `
+          <img src="${iconPath}" alt="${translatedName}" class="result-icon">
+          <span>✅ ${getTranslation('correct', currentLanguage)} ${getTranslation('it_was', currentLanguage)} ${translatedName}</span>
+        `;
+        result.className = 'result correct';
+        result.style.display = 'flex';
+
+        // Разблокируем все уровни для прослушивания
+        unlockAllLevels();
+
+        // Отключаем только поле ввода и кнопку угадывания
+        guessBtn.disabled = true;
+        killerInput.disabled = true;
+        suggestionsDiv.style.display = 'none';
+        restartBtn.style.display = 'inline-block';
+
+        // Добавляем в историю
+        killerHistory.push(selectedKillerKey);
+        if (killerHistory.length > 10) killerHistory = killerHistory.slice(-10);
+        saveKillerHistory();
+      } else {
+        // Проигрываем звук неправильного ответа
+        wrongSound.currentTime = 0;
+        wrongSound.play();
         incorrectAnswers++;
         if (currentLevel < 4) {
-                     result.innerHTML = `
-             <img src="${iconPath}" alt="${translatedName}" class="result-icon">
-             <span>❌ Неправильно. Открыт уровень ${currentLevel + 1}</span>
-           `;
-           result.className = 'result incorrect';
-           result.style.display = 'flex';
+          result.innerHTML = `
+            <img src="${iconPath}" alt="${translatedName}" class="result-icon">
+            <span>❌ ${getTranslation('wrong', currentLanguage)} ${getTranslation('level_opened', currentLanguage)} ${currentLevel + 1}</span>
+          `;
+          result.className = 'result incorrect';
+          result.style.display = 'flex';
           document.getElementById(`btn${currentLevel + 1}`).disabled = false;
           currentLevel++;
-                 } else {
-           const correctKillerName = killers[selectedKillerKey];
-           const correctTranslatedName = getTranslation(correctKillerName, currentLanguage);
-           const correctIconPath = `img/${getKillerIcon(correctKillerName)}`;
-                        result.innerHTML = `
-               <img src="${correctIconPath}" alt="${correctTranslatedName}" class="result-icon">
-               <span>❌ Неправильно. Это был ${correctTranslatedName}</span>
-             `;
-             result.className = 'result incorrect';
-             result.style.display = 'flex';
-           
-           // Разблокируем все уровни для прослушивания даже при проигрыше
-           unlockAllLevels();
-           
-           // Отключаем только поле ввода и кнопку угадывания
-           guessBtn.disabled = true;
-           killerInput.disabled = true;
-           suggestionsDiv.style.display = 'none';
-           restartBtn.style.display = 'inline-block';
-         }
+        } else {
+          const correctKillerName = killers[selectedKillerKey];
+          const correctTranslatedName = getTranslation(correctKillerName, currentLanguage);
+          const correctIconPath = `img/${getKillerIcon(correctKillerName)}`;
+          result.innerHTML = `
+            <img src="${correctIconPath}" alt="${correctTranslatedName}" class="result-icon">
+            <span>❌ ${getTranslation('wrong', currentLanguage)} ${getTranslation('it_was', currentLanguage)} ${correctTranslatedName}</span>
+          `;
+          result.className = 'result incorrect';
+          result.style.display = 'flex';
+
+          // Разблокируем все уровни для прослушивания даже при проигрыше
+          unlockAllLevels();
+
+          // Отключаем только поле ввода и кнопку угадывания
+          guessBtn.disabled = true;
+          killerInput.disabled = true;
+          suggestionsDiv.style.display = 'none';
+          restartBtn.style.display = 'inline-block';
+        }
       }
 
       // Обновляем и сохраняем статистику
@@ -1162,11 +1203,44 @@
       currentLanguage = currentLanguage === 'en' ? 'ru' : 'en';
       updateLanguageDisplay();
       saveLanguage();
-      
       // Очищаем поле ввода при смене языка
       killerInput.value = '';
       suggestionsDiv.style.display = 'none';
+      // Переводим интерфейс
+      updateAllTranslations();
     });
+
+    // Перевод всех надписей на странице
+    function updateAllTranslations() {
+      // Хедер
+      document.querySelector('.header h1').textContent = getTranslation('game_title', currentLanguage);
+      // Кнопки уровней
+      document.getElementById('btn1').textContent = getTranslation('far', currentLanguage);
+      document.getElementById('btn2').textContent = getTranslation('approaching', currentLanguage);
+      document.getElementById('btn3').textContent = getTranslation('close', currentLanguage);
+      document.getElementById('btn4').textContent = getTranslation('chase', currentLanguage);
+      // Кнопка угадывания
+      guessBtn.textContent = getTranslation('guess', currentLanguage);
+      // Кнопка рестарта
+      restartBtn.textContent = getTranslation('restart', currentLanguage);
+      // Плейсхолдер ввода
+      killerInput.placeholder = getTranslation('input_placeholder', currentLanguage);
+      // Статистика
+      document.querySelector('.stat-label[for-correct]')?.removeAttribute('for-correct');
+      document.querySelector('.stat-label[for-incorrect]')?.removeAttribute('for-incorrect');
+      document.querySelector('.stat-label[for-accuracy]')?.removeAttribute('for-accuracy');
+      document.querySelectorAll('.stat-label')[0].textContent = getTranslation('correct_label', currentLanguage);
+      document.querySelectorAll('.stat-label')[1].textContent = getTranslation('wrong_label', currentLanguage);
+      document.querySelectorAll('.stat-label')[2].textContent = getTranslation('accuracy_label', currentLanguage);
+      // Кнопка сброса статистики
+      resetStatsBtn.textContent = getTranslation('reset_stats', currentLanguage);
+      // Футер
+      document.querySelector('.footer-text').textContent = getTranslation('footer_copyright', currentLanguage);
+      // Футер ссылки
+      document.querySelectorAll('.footer-link')[0].textContent = getTranslation('about', currentLanguage);
+      document.querySelectorAll('.footer-link')[1].textContent = getTranslation('help', currentLanguage);
+      document.querySelectorAll('.footer-link')[2].textContent = getTranslation('contacts', currentLanguage);
+    }
 
                                                  // Добавляем поддержку Enter для отправки с умным вводом
       killerInput.addEventListener('keypress', (e) => {
@@ -1210,6 +1284,8 @@
      audio.addEventListener('ended', updatePlayPauseButton);
      audio.addEventListener('loadstart', updateTrackInfo);
      
+     // Загружаем историю убийц
+     loadKillerHistory();
      // Загружаем статистику и язык при загрузке страницы
      loadStats();
      loadLanguage();
